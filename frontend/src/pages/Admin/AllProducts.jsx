@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import moment from "moment";
 import { useAllProductsQuery } from "../../redux/api/productApiSlice";
 import AdminMenu from "./AdminMenu";
@@ -24,10 +24,13 @@ const AllProducts = () => {
             </div>
             <div className="flex flex-wrap justify-around items-center">
               {products.map((product) => (
-                <Link
+                <div
                   key={product._id}
-                  to={`/admin/product/update/${product._id}`}
-                  className="block mb-4 overflow-hidden"
+                  // to={`/admin/product/update/${product._id}`}
+                  className="block mb-4 overflow-hidden cursor-pointer"
+                  onClick={() =>
+                    navigate(`/admin/product/update/${product._id}`)
+                  }
                 >
                   <div className="flex">
                     <img
@@ -76,7 +79,7 @@ const AllProducts = () => {
                       </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           </div>
