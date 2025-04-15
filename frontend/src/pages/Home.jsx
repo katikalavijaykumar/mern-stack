@@ -9,6 +9,13 @@ const Home = () => {
   const { keyword } = useParams();
   const { data, isLoading, isError } = useGetProductsQuery({ keyword });
 
+  const getErrorMessage = () => {
+    if (!isError) return 'An unknown error occurred';
+    if (isError.data?.message) return isError.data.message;
+    if (isError.error) return isError.error;
+    return 'Failed to load products';
+  };
+
   return (
     <>
       {!keyword ? <Header /> : null}
@@ -16,7 +23,7 @@ const Home = () => {
         <Loader />
       ) : isError ? (
         <Message variant="danger">
-          {isError?.data.message || isError.error}
+          {getErrorMessage()}
         </Message>
       ) : (
         <>
@@ -35,7 +42,7 @@ const Home = () => {
 
           <div>
             <div className="flex justify-center flex-wrap mt-[2rem]">
-              {data.products.map((product) => (
+              {data?.products?.map((product) => (
                 <div key={product._id}>
                   <Product product={product} />
                 </div>
