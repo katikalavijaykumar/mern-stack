@@ -1,50 +1,37 @@
-import path from "path";
-import express from "express";
-import multer from "multer";
+import express from 'express';
+import { uploadImage, deleteImage, getUploads } from '../controllers/uploadController.js';
+import { upload } from '../config/multer.js';
+import { authenticate, authorizeAdmin } from '../middlewares/authMiddleware.js';
+import path from 'path';
+import fs from 'fs';
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
+router.route('/')
+  .post(authenticate, authorizeAdmin, upload.single('image'), uploadImage)
+  .get(authenticate, authorizeAdmin, getUploads);
 
-  filename: (req, file, cb) => {
-    const extname = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${Date.now()}${extname}`);
-  },
-});
+router.route('/:id')
+  .delete(authenticate, authorizeAdmin, deleteImage);
 
-const fileFilter = (req, file, cb) => {
-  const filetypes = /jpe?g|png|webp/;
-  const mimetypes = /image\/jpe?g|image\/png|image\/webp/;
-
-  const extname = path.extname(file.originalname).toLowerCase();
-  const mimetype = file.mimetype;
-
-  if (filetypes.test(extname) && mimetypes.test(mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Images only"), false);
-  }
-};
-
-const upload = multer({ storage, fileFilter });
-const uploadSingleImage = upload.single("image");
-
-router.post("/", (req, res) => {
-  uploadSingleImage(req, res, (err) => {
-    if (err) {
-      res.status(400).send({ message: err.message });
-    } else if (req.file) {
-      res.status(200).send({
-        message: "Image uploaded successfully",
-        image: `/${req.file.path}`,
-      });
-    } else {
-      res.status(400).send({ message: "No image file provided" });
+// @desc    Test image upload
+// @route   POST /api/upload/test
+// @access  Public (for testing only)
+router.post('/test', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload an image' });
     }
-  });
+
+    console.log('File details:', req.file);
+    res.status(200).json({ 
+      message: 'Image uploaded successfully',
+      file: req.file 
+    });
+  } catch (error) {
+    console.error('Error in test upload:', error);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 export default router;

@@ -2,11 +2,15 @@ import { Link } from "react-router-dom";
 import HeartIcon from "./HeartIcon";
 
 const Product = ({ product }) => {
+  const imageUrl = product.image.startsWith('http') 
+    ? product.image 
+    : `http://localhost:5000${product.image}`;
+
   return (
     <div className="w-[30rem] ml-[2rem] p-3 relative">
       <div className="relative">
         <img
-          src={product.image}
+          src={imageUrl}
           alt={product.name}
           className="w-[30rem] rounded"
         />

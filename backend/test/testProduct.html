@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Product Creation</title>
+</head>
+<body>
+    <h2>Test Product Creation</h2>
+    <form id="productForm" enctype="multipart/form-data">
+        <div>
+            <label>Name:</label>
+            <input type="text" name="name" required>
+        </div>
+        <div>
+            <label>Description:</label>
+            <textarea name="description" required></textarea>
+        </div>
+        <div>
+            <label>Price:</label>
+            <input type="number" name="price" step="0.01" required>
+        </div>
+        <div>
+            <label>Category:</label>
+            <input type="text" name="category" required>
+        </div>
+        <div>
+            <label>Brand:</label>
+            <input type="text" name="brand" required>
+        </div>
+        <div>
+            <label>Count in Stock:</label>
+            <input type="number" name="countInStock" required>
+        </div>
+        <div>
+            <label>Image:</label>
+            <input type="file" name="image" accept="image/*" required>
+        </div>
+        <button type="submit">Create Product</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        // Function to get the JWT token - you'll need to log in first and store the token
+        function getStoredToken() {
+            return localStorage.getItem('jwt');
+        }
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const token = getStoredToken();
+                if (!token) {
+                    throw new Error('Please log in first');
+                }
+
+                const response = await fetch('http://localhost:5000/api/products', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <p>Status: ${response.status}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <p style="color: red">Error: ${error.message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html> 

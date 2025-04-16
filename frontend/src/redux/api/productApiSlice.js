@@ -82,11 +82,26 @@ export const productApiSlice = apiSlice.injectEndpoints({
     }),
 
     getFilteredProducts: builder.query({
-      query: ({ checked, radio }) => ({
-        url: `${PRODUCT_URL}/filtered-products`,
-        method: "POST",
-        body: { checked, radio },
-      }),
+      query: ({ checked, radio }) => {
+        // For logging/debugging
+        console.log('Sending filter request with:', { checked, radio });
+        
+        // Convert arrays to JSON strings for query params
+        const checkedParam = checked && checked.length ? JSON.stringify(checked) : '';
+        const radioParam = radio && radio.length ? JSON.stringify(radio) : '';
+        
+        return {
+          url: `${PRODUCT_URL}/filtered-products`,
+          params: { 
+            checked: checkedParam,
+            radio: radioParam
+          },
+          // Use GET method for better caching and to avoid CORS preflight
+          method: "GET"
+        };
+      },
+      // Enable cache invalidation when products change
+      providesTags: ["Products"],
     }),
   }),
 });

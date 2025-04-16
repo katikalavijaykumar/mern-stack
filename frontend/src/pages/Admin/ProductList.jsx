@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import AdminMenu from "./AdminMenu";
 
 const ProductList = () => {
-  const [image, setImage] = useState("");
+  const [imageFile, setImageFile] = useState(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -27,9 +27,14 @@ const ProductList = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!imageFile) {
+      toast.error("Please upload an image");
+      return;
+    }
+
     try {
       const productData = new FormData();
-      productData.append("image", image);
+      productData.append("image", imageFile);
       productData.append("name", name);
       productData.append("description", description);
       productData.append("price", price);
@@ -37,6 +42,17 @@ const ProductList = () => {
       productData.append("quantity", quantity);
       productData.append("brand", brand);
       productData.append("countInStock", stock);
+
+      console.log("Form data:", {
+        name,
+        description,
+        price,
+        category,
+        quantity,
+        brand,
+        stock,
+        imageFile: imageFile.name
+      });
 
       const { data } = await createProduct(productData);
 
@@ -53,8 +69,16 @@ const ProductList = () => {
   };
 
   const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImageFile(file);
+    setImageUrl(URL.createObjectURL(file));
+
+    // Optionally upload the image separately first
+    /*
     const formData = new FormData();
-    formData.append("image", e.target.files[0]);
+    formData.append("image", file);
 
     try {
       const res = await uploadProductImage(formData).unwrap();
@@ -64,6 +88,7 @@ const ProductList = () => {
     } catch (error) {
       toast.error(error?.data?.message || error.error);
     }
+    */
   };
 
   return (
@@ -85,14 +110,14 @@ const ProductList = () => {
 
           <div className="mb-3">
             <label className="border text-white px-4 block w-full text-center rounded-lg cursor-pointer font-bold py-11">
-              {image ? image.name : "Upload Image"}
+              {imageFile ? imageFile.name : "Upload Image"}
 
               <input
                 type="file"
                 name="image"
                 accept="image/*"
                 onChange={uploadFileHandler}
-                className={!image ? "hidden" : "text-white"}
+                className="hidden"
               />
             </label>
           </div>

@@ -34,30 +34,49 @@ const createUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  console.log(email);
-  console.log(password);
-
-  const existingUser = await User.findOne({ email });
-
-  if (existingUser) {
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      existingUser.password
-    );
-
-    if (isPasswordValid) {
-      createToken(res, existingUser._id);
-
-      res.status(201).json({
-        _id: existingUser._id,
-        username: existingUser.username,
-        email: existingUser.email,
-        isAdmin: existingUser.isAdmin,
-      });
-      return;
+    if (!email || !password) {
+      res.status(400);
+      throw new Error('Please provide email and password');
     }
+
+    console.log('Login attempt for:', email);
+
+    const existingUser = await User.findOne({ email });
+    console.log('User found:', existingUser ? 'Yes' : 'No');
+
+    if (!existingUser) {
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
+
+    console.log('Comparing passwords...');
+    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+    console.log('Password comparison result:', isPasswordValid);
+
+    if (!isPasswordValid) {
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
+
+    // Create token and set cookie
+    createToken(res, existingUser._id);
+
+    // Send user data in response
+    res.status(200).json({
+      _id: existingUser._id,
+      username: existingUser.username,
+      email: existingUser.email,
+      isAdmin: existingUser.isAdmin
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      message: error.message || 'An error occurred during login'
+    });
   }
 });
 

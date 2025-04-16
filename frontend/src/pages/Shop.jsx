@@ -10,6 +10,7 @@ import {
 } from "../redux/features/shop/shopSlice";
 import Loader from "../components/Loader";
 import ProductCard from "./Products/ProductCard";
+import Message from "../components/Message";
 
 const Shop = () => {
   const dispatch = useDispatch();
@@ -26,14 +27,14 @@ const Shop = () => {
   });
 
   useEffect(() => {
-    if (!categoriesQuery.isLoading) {
+    if (!categoriesQuery.isLoading && categoriesQuery.data) {
       dispatch(setCategories(categoriesQuery.data));
     }
   }, [categoriesQuery.data, dispatch]);
 
   useEffect(() => {
     if (!checked.length || !radio.length) {
-      if (!filteredProductsQuery.isLoading) {
+      if (!filteredProductsQuery.isLoading && filteredProductsQuery.data) {
         // Filter products based on both checked categories and price filter
         const filteredProducts = filteredProductsQuery.data.filter(
           (product) => {
@@ -51,10 +52,12 @@ const Shop = () => {
   }, [checked, radio, filteredProductsQuery.data, dispatch, priceFilter]);
 
   const handleBrandClick = (brand) => {
-    const productsByBrand = filteredProductsQuery.data?.filter(
-      (product) => product.brand === brand
-    );
-    dispatch(setProducts(productsByBrand));
+    if (filteredProductsQuery.data) {
+      const productsByBrand = filteredProductsQuery.data.filter(
+        (product) => product.brand === brand
+      );
+      dispatch(setProducts(productsByBrand));
+    }
   };
 
   const handleCheck = (value, id) => {
@@ -65,20 +68,31 @@ const Shop = () => {
   };
 
   // Add "All Brands" option to uniqueBrands
-  const uniqueBrands = [
-    ...Array.from(
-      new Set(
-        filteredProductsQuery.data
-          ?.map((product) => product.brand)
-          .filter((brand) => brand !== undefined)
-      )
-    ),
-  ];
+  const uniqueBrands = filteredProductsQuery.data
+    ? [...Array.from(
+        new Set(
+          filteredProductsQuery.data
+            .map((product) => product.brand)
+            .filter((brand) => brand !== undefined)
+        )
+      )]
+    : [];
 
   const handlePriceChange = (e) => {
-    // Update the price filter state when the user types in the input filed
     setPriceFilter(e.target.value);
   };
+
+  if (categoriesQuery.isLoading || filteredProductsQuery.isLoading) {
+    return <Loader />;
+  }
+
+  if (categoriesQuery.isError || filteredProductsQuery.isError) {
+    return (
+      <Message variant="danger">
+        {categoriesQuery.error?.data?.message || filteredProductsQuery.error?.data?.message || "An error occurred"}
+      </Message>
+    );
+  }
 
   return (
     <>

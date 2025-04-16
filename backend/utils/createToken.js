@@ -13,6 +13,9 @@ const generateToken = (res, userId) => {
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
+  // Store token in res.locals for access in the response
+  res.locals.token = token;
+
   return token;
 };
 
