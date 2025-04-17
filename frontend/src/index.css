@@ -2,12 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background: #0f0f10;
-  color: #fff;
+html {
+  scroll-behavior: smooth;
 }
 
-input,
-textarea {
-  color: #000;
+body {
+  @apply bg-light-primary text-gray-800 dark:bg-dark-primary dark:text-gray-200 transition-colors duration-300;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md transition-all duration-300;
+  }
+  
+  .btn-secondary {
+    @apply bg-light-secondary dark:bg-dark-secondary text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-md;
+  }
+
+  .card {
+    @apply bg-white dark:bg-dark-card shadow-md rounded-lg p-4 transition-colors duration-300;
+  }
+
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+    focus:outline-none focus:ring-2 focus:ring-primary-500 
+    bg-white dark:bg-dark-input text-gray-800 dark:text-gray-200 transition-colors duration-300;
+  }
+
+  .theme-transition {
+    @apply transition-colors duration-300;
+  }
+}
+
+/* Custom variables using CSS variables */
+:root {
+  --bg-color: #f8fafc;
+  --text-color: #334155;
+  --border-color: #e2e8f0;
+  --highlight-color: #f472b6;
+  --muted-color: #94a3b8;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --button-bg: #f472b6;
+  --button-text: #ffffff;
+  --nav-bg: #ffffff;
+  --nav-border: #e2e8f0;
+}
+
+/* Dark mode */
+.dark {
+  --bg-color: #0f172a;
+  --text-color: #e2e8f0;
+  --border-color: #334155;
+  --highlight-color: #ec4899;
+  --muted-color: #64748b;
+  --card-bg: #1e293b;
+  --input-bg: #1e293b;
+  --input-border: #334155;
+  --button-bg: #ec4899;
+  --button-text: #f8fafc;
+  --nav-bg: #1e293b;
+  --nav-border: #334155;
+}
+
+/* Component styles using CSS variables */
+.card-css-var {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+  transition: all 0.5s ease;
+}
+
+.form-input-css-var {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.button-css-var {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  transition: all 0.3s ease;
+}
+
+.nav-css-var {
+  background-color: var(--nav-bg);
+  border-color: var(--nav-border);
+  transition: all 0.5s ease;
+}
+
+/* Add smooth transitions to common elements */
+button, a, input, textarea, select {
+  transition: all 0.3s ease;
+}
+
+/* Theme element transition class */
+.theme-element {
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
 }

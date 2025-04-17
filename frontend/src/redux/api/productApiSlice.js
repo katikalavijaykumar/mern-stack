@@ -69,6 +69,24 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: (result, error, { productId }) => 
+        error ? [] : [
+          { type: 'Product', id: productId },
+          'Products'
+        ],
+      async onQueryStarted(data, { dispatch, queryFulfilled }) {
+        try {
+          const { data: response } = await queryFulfilled;
+          console.log('Review submitted successfully:', response);
+          
+          // If we got updated product data in the response, we could update the cache directly
+          if (response?.product) {
+            console.log('Received updated product data with new review');
+          }
+        } catch (err) {
+          console.error('Failed to create review:', err);
+        }
+      },
     }),
 
     getTopProducts: builder.query({
@@ -82,22 +100,25 @@ export const productApiSlice = apiSlice.injectEndpoints({
     }),
 
     getFilteredProducts: builder.query({
-      query: ({ checked, radio }) => {
+      query: ({ checked, radio, keyword, category, ratings }) => {
         // For logging/debugging
-        console.log('Sending filter request with:', { checked, radio });
+        console.log('Sending filter request with:', { checked, radio, keyword, category, ratings });
         
-        // Convert arrays to JSON strings for query params
-        const checkedParam = checked && checked.length ? JSON.stringify(checked) : '';
-        const radioParam = radio && radio.length ? JSON.stringify(radio) : '';
+        // Build query parameters object
+        const params = {};
+        
+        // Add parameters only if they exist and have values
+        if (checked && checked.length) params.checked = JSON.stringify(checked);
+        if (radio && radio.length) params.radio = JSON.stringify(radio);
+        if (keyword) params.keyword = keyword;
+        if (category) params.category = category;
+        if (ratings) params.ratings = ratings;
         
         return {
-          url: `${PRODUCT_URL}/filtered-products`,
-          params: { 
-            checked: checkedParam,
-            radio: radioParam
-          },
-          // Use GET method for better caching and to avoid CORS preflight
-          method: "GET"
+          url: `${PRODUCT_URL}/filter`,
+          params,
+          method: "POST",
+          body: { checked, radio, keyword, category, ratings }
         };
       },
       // Enable cache invalidation when products change

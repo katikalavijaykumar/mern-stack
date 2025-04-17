@@ -6,8 +6,8 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Match the uploadsDir path with index.js
-const uploadsDir = path.join(path.dirname(__dirname), 'uploads');
+// Match the uploadsDir path with index.js - using path.resolve for better cross-platform compatibility
+const uploadsDir = path.resolve(path.dirname(__dirname), 'uploads');
 console.log('Multer uploadsDir configured as:', uploadsDir);
 
 // Ensure uploads directory exists

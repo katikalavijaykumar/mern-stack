@@ -11,9 +11,19 @@ const authenticate = asyncHandler(async (req, res, next) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Include name and email in the selection
       req.user = await User.findById(decoded.userId).select("-password");
+      
+      // Log more details for debugging
+      console.log('Authenticated user:', {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email
+      });
+      
       next();
     } catch (error) {
+      console.error('Token verification error:', error);
       res.status(401);
       throw new Error("Not authorized, token failed.");
     }

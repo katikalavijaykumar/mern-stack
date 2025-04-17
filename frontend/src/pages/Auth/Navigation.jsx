@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AiOutlineHome,
   AiOutlineShopping,
@@ -7,20 +7,25 @@ import {
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { FaHeart } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import "./Navigation.css";
 import { useSelector, useDispatch } from "react-redux";
 import { useLogoutMutation } from "../../redux/api/usersApiSlice";
 import { logout } from "../../redux/features/auth/authSlice";
 import FavoritesCount from "../Products/FavoritesCount";
+import ThemeToggle from "../../components/ThemeToggle";
 
 const Navigation = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.cart);
+  const location = useLocation();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+
+  // Check if we're on an admin page
+  const isAdminPage = location.pathname.includes('/admin/');
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -41,12 +46,17 @@ const Navigation = () => {
     }
   };
 
+  // If we're on an admin page, don't render the Navigation
+  if (isAdminPage) {
+    return null;
+  }
+
   return (
     <div
       style={{ zIndex: 9999 }}
       className={`${
         showSidebar ? "hidden" : "flex"
-      } xl:flex lg:flex md:hidden sm:hidden flex-col justify-between p-4 text-white bg-[#000] w-[4%] hover:w-[15%] h-[100vh]  fixed `}
+      } xl:flex lg:flex md:hidden sm:hidden flex-col justify-between p-4 text-white bg-[#000] dark:bg-dark-primary w-[4%] hover:w-[15%] h-[100vh] fixed `}
       id="navigation-container"
     >
       <div className="flex flex-col justify-center space-y-4">
@@ -92,6 +102,16 @@ const Navigation = () => {
             <FavoritesCount />
           </div>
         </Link>
+        
+        {/* Theme Toggle */}
+        <div className="flex items-center transition-transform transform hover:translate-x-2">
+          <div className="mt-[3rem] mr-2">
+            <ThemeToggle />
+          </div>
+          <span className="hidden nav-item-name mt-[3rem]">
+            Theme
+          </span>
+        </div>
       </div>
 
       <div className="relative">
@@ -100,7 +120,7 @@ const Navigation = () => {
           className="flex items-center text-gray-800 focus:outline-none"
         >
           {userInfo ? (
-            <span className="text-white">{userInfo.username}</span>
+            <span className="text-white dark:text-white">{userInfo.username}</span>
           ) : (
             <></>
           )}
@@ -126,7 +146,7 @@ const Navigation = () => {
 
         {dropdownOpen && userInfo && (
           <ul
-            className={`absolute right-0 mt-2 mr-14 space-y-2 bg-white text-gray-600 ${
+            className={`absolute right-0 mt-2 mr-14 space-y-2 bg-white dark:bg-dark-secondary text-gray-600 dark:text-gray-200 ${
               !userInfo.isAdmin ? "-top-20" : "-top-80"
             } `}
           >
@@ -135,7 +155,7 @@ const Navigation = () => {
                 <li>
                   <Link
                     to="/admin/dashboard"
-                    className="block px-4 py-2 hover:bg-gray-100"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Dashboard
                   </Link>
@@ -143,7 +163,7 @@ const Navigation = () => {
                 <li>
                   <Link
                     to="/admin/productlist"
-                    className="block px-4 py-2 hover:bg-gray-100"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Products
                   </Link>
@@ -151,7 +171,7 @@ const Navigation = () => {
                 <li>
                   <Link
                     to="/admin/categorylist"
-                    className="block px-4 py-2 hover:bg-gray-100"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Category
                   </Link>
@@ -159,7 +179,7 @@ const Navigation = () => {
                 <li>
                   <Link
                     to="/admin/orderlist"
-                    className="block px-4 py-2 hover:bg-gray-100"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Orders
                   </Link>
@@ -167,7 +187,7 @@ const Navigation = () => {
                 <li>
                   <Link
                     to="/admin/userlist"
-                    className="block px-4 py-2 hover:bg-gray-100"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Users
                   </Link>
@@ -176,14 +196,14 @@ const Navigation = () => {
             )}
 
             <li>
-              <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">
+              <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
                 Profile
               </Link>
             </li>
             <li>
               <button
                 onClick={logoutHandler}
-                className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 Logout
               </button>

@@ -1,84 +1,166 @@
 import { Link } from "react-router-dom";
-import { AiOutlineShoppingCart } from "react-icons/ai";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../redux/features/cart/cartSlice";
+import { FaHeart, FaRegHeart, FaShoppingCart, FaStar } from "react-icons/fa";
 import { toast } from "react-toastify";
-import HeartIcon from "./HeartIcon";
+import { useState } from "react";
+import { addToFavorites, removeFromFavorites } from "../../redux/features/favorites/favoriteSlice";
 
-const ProductCard = ({ p }) => {
+const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
+  const favorites = useSelector((state) => state.favorites);
+  const [favorite, setFavorite] = useState(
+    favorites.some(p => p._id === product?._id) || false
+  );
 
-  const addToCartHandler = (product, qty) => {
-    dispatch(addToCart({ ...product, qty }));
-    toast.success("Item added successfully", {
-      position: toast.POSITION.TOP_RIGHT,
-      autoClose: 2000,
-    });
+  // Format price with commas and currency symbol
+  const formatPrice = (price) => {
+    return `₹${price.toLocaleString('en-IN')}`;
   };
 
+  // Handle the image URL - could be a relative path or a full URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "/images/sample.jpg";
+    
+    // If it's already a full URL, return it
+    if (imagePath.startsWith("http")) {
+      return imagePath;
+    }
+    
+    // For local images that start with /uploads
+    if (imagePath.startsWith("/uploads")) {
+      return `${import.meta.env.VITE_API_URL}${imagePath}`;
+    }
+    
+    // Default image path
+    return imagePath;
+  };
+
+  const addToCartHandler = () => {
+    dispatch(
+      addToCart({
+        ...product,
+        qty: 1,
+      })
+    );
+    toast.success("Item added to cart");
+  };
+
+  const toggleFavoriteHandler = async () => {
+    try {
+      if (favorite) {
+        dispatch(removeFromFavorites(product));
+        setFavorite(false);
+        toast.success("Removed from favorites");
+      } else {
+        dispatch(addToFavorites(product));
+        setFavorite(true);
+        toast.success("Added to favorites");
+      }
+    } catch (error) {
+      toast.error("Please login to add favorites");
+    }
+  };
+
+  // Calculate discount percentage if original price exists and is higher
+  const calculateDiscount = () => {
+    if (product.originalPrice && product.originalPrice > product.price) {
+      return Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+    }
+    return 0;
+  };
+
+  const discountPercentage = calculateDiscount();
+
   return (
-    <div className="max-w-sm relative bg-[#1A1A1A] rounded-lg shaodw dark:bg-gray-800 dark:border-gray-700">
-      <section className="relative">
-        <Link to={`/product/${p._id}`}>
-          <span className="absolute bottom-3 right-3 bg-pink-100 text-pink-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-pink-900 dark:text-pink-300">
-            {p?.brand}
-          </span>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
+      {/* Product image with favorite button and discount badge */}
+      <div className="relative">
+        <Link to={`/product/${product._id}`}>
           <img
-            className="cursor-pointer w-full"
-            src={`http://localhost:5000${p.image}`}
-            alt={p.name}
-            style={{ height: "170px", objectFit: "cover" }}
+            src={getImageUrl(product.image)}
+            alt={product.name}
+            className="w-full h-48 object-cover"
           />
         </Link>
-        <HeartIcon product={p} />
-      </section>
-
-      <div className="p-5">
-        <div className="flex justify-between">
-          <h5 className="mb-2 text-xl text-whiet dark:text-white">{p?.name}</h5>
-
-          <p className="text-black font-semibold text-pink-500">
-            {p?.price?.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
+        
+        {/* Discount badge */}
+        {discountPercentage > 0 && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
+            {discountPercentage}% OFF
+          </div>
+        )}
+        
+        {/* Favorite button */}
+        <button
+          onClick={toggleFavoriteHandler}
+          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/70 dark:bg-gray-800/70 flex items-center justify-center transition-colors hover:bg-white dark:hover:bg-gray-800"
+        >
+          {favorite ? (
+            <FaHeart className="text-red-500" size={16} />
+          ) : (
+            <FaRegHeart className="text-gray-500 dark:text-gray-400" size={16} />
+          )}
+        </button>
+      </div>
+      
+      {/* Product details */}
+      <div className="p-4">
+        <Link to={`/product/${product._id}`}>
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1 line-clamp-1">
+            {product.name}
+          </h3>
+        </Link>
+        
+        {/* Category */}
+        {product.category && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            {product.category.name}
           </p>
-        </div>
-
-        <p className="mb-3 font-normal text-[#CFCFCF]">
-          {p?.description?.substring(0, 60)} ...
-        </p>
-
-        <section className="flex justify-between items-center">
-          <Link
-            to={`/product/${p._id}`}
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-pink-700 rounded-lg hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800"
-          >
-            Read More
-            <svg
-              className="w-3.5 h-3.5 ml-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 10"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M1 5h12m0 0L9 1m4 4L9 9"
+        )}
+        
+        {/* Ratings */}
+        <div className="flex items-center mb-2">
+          <div className="flex items-center text-yellow-400">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <FaStar
+                key={star}
+                size={12}
+                className={
+                  product.rating >= star
+                    ? "text-yellow-400"
+                    : "text-gray-300 dark:text-gray-600"
+                }
               />
-            </svg>
-          </Link>
-
+            ))}
+          </div>
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+            ({product.numReviews})
+          </span>
+        </div>
+        
+        {/* Price */}
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-lg font-medium text-gray-900 dark:text-white">
+              {formatPrice(product.price)}
+            </span>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-sm text-gray-500 dark:text-gray-400 line-through ml-2">
+                {formatPrice(product.originalPrice)}
+              </span>
+            )}
+          </div>
+          
+          {/* Add to cart button */}
           <button
-            className="p-2 rounded-full"
-            onClick={() => addToCartHandler(p, 1)}
+            onClick={addToCartHandler}
+            className="bg-primary-500 hover:bg-primary-600 text-white p-2 rounded-full transition-colors"
+            aria-label="Add to cart"
           >
-            <AiOutlineShoppingCart size={25} />
+            <FaShoppingCart size={14} />
           </button>
-        </section>
+        </div>
       </div>
     </div>
   );

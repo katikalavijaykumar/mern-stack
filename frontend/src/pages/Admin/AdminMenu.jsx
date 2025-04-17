@@ -1,35 +1,41 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { FaTimes } from "react-icons/fa";
 
 const AdminMenu = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+  
+  // Determine if this is a standalone admin page (not within another layout)
+  const isStandaloneAdminPage = location.pathname.includes('/admin/');
 
   return (
     <>
-      <button
-        className={`${
-          isMenuOpen ? "top-2 right-2" : "top-5 right-7"
-        } bg-[#151515] p-2 fixed rounded-lg`}
-        onClick={toggleMenu}
-      >
-        {isMenuOpen ? (
-          <FaTimes color="white" />
-        ) : (
-          <>
-            <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
-            <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
-            <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
-          </>
-        )}
-      </button>
+      {isStandaloneAdminPage && (
+        <button
+          className={`${
+            isMenuOpen ? "top-2 right-2" : "top-5 right-7"
+          } bg-[#151515] p-2 fixed rounded-lg z-[9998]`}
+          onClick={toggleMenu}
+        >
+          {isMenuOpen ? (
+            <FaTimes color="white" />
+          ) : (
+            <>
+              <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
+              <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
+              <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
+            </>
+          )}
+        </button>
+      )}
 
       {isMenuOpen && (
-        <section className="bg-[#151515] p-4 fixed right-7 top-5">
+        <section className="bg-[#151515] p-4 fixed right-7 top-5 z-[9998]">
           <ul className="list-none mt-2">
             <li>
               <NavLink

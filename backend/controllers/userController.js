@@ -68,6 +68,7 @@ const loginUser = asyncHandler(async (req, res) => {
     res.status(200).json({
       _id: existingUser._id,
       username: existingUser.username,
+      name: existingUser.username,
       email: existingUser.email,
       isAdmin: existingUser.isAdmin
     });
@@ -101,6 +102,7 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
     res.json({
       _id: user._id,
       username: user.username,
+      name: user.username,
       email: user.email,
     });
   } else {
@@ -127,6 +129,7 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
     res.json({
       _id: updatedUser._id,
       username: updatedUser.username,
+      name: updatedUser.username,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
     });

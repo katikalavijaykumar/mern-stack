@@ -209,36 +209,71 @@ const fetchProductById = asyncHandler(async (req, res) => {
 // @access  Private
 const addProductReview = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
-  const product = await Product.findById(req.params.id);
+  
+  console.log('Review submission received:');
+  console.log('Product ID:', req.params.id);
+  console.log('User:', req.user ? { 
+    id: req.user._id, 
+    username: req.user.username,
+    name: req.user.name, 
+    email: req.user.email 
+  } : 'No user data');
+  console.log('Review data:', { rating, comment });
+  
+  try {
+    const product = await Product.findById(req.params.id);
 
-  if (product) {
+    if (!product) {
+      console.log('Product not found with ID:', req.params.id);
+      res.status(404);
+      throw new Error("Product not found");
+    }
+
     const alreadyReviewed = product.reviews.find(
       (r) => r.user.toString() === req.user._id.toString()
     );
 
     if (alreadyReviewed) {
+      console.log('User already reviewed this product');
       res.status(400);
       throw new Error("Product already reviewed");
     }
 
+    // Ensure we have a valid name for the review - multiple fallbacks
+    let userName = "Anonymous";
+    if (req.user.username) userName = req.user.username;
+    else if (req.user.name) userName = req.user.name;
+    else if (req.user.email) userName = req.user.email.split('@')[0];
+    
+    console.log('Using review name:', userName);
+    
     const review = {
-      name: req.user.name,
+      name: userName,
       rating: Number(rating),
       comment,
       user: req.user._id,
     };
 
+    console.log('Adding review to product:', review);
     product.reviews.push(review);
     product.numReviews = product.reviews.length;
     product.rating =
       product.reviews.reduce((acc, item) => item.rating + acc, 0) /
       product.reviews.length;
 
-    await product.save();
-    res.status(201).json({ message: "Review added" });
-  } else {
-    res.status(404);
-    throw new Error("Product not found");
+    const updatedProduct = await product.save();
+    console.log('Product updated with new review. Total reviews:', updatedProduct.numReviews);
+    
+    // Return the complete updated product to ensure frontend has fresh data
+    res.status(201).json({
+      message: "Review added successfully",
+      product: updatedProduct
+    });
+  } catch (error) {
+    console.error('Error handling review submission:', error);
+    res.status(error.statusCode || 500).json({
+      message: error.message || 'Error submitting review'
+    });
   }
 });
 

@@ -25,7 +25,7 @@ const port = process.env.PORT || 5000;
 // Setup directories and paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const uploadsDir = path.join(__dirname, 'uploads');
+const uploadsDir = path.resolve(__dirname, 'uploads');
 
 // Ensure uploads directory exists
 import fs from 'fs';

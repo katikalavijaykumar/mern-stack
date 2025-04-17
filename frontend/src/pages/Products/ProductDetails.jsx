@@ -44,17 +44,42 @@ const ProductDetails = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    
+    if (!rating) {
+      toast.error("Please select a rating");
+      return;
+    }
+    
+    if (loadingProductReview) {
+      return; // Prevent duplicate submissions
+    }
 
     try {
-      await createReview({
+      console.log('Submitting review with data:', { productId, rating, comment });
+      
+      const result = await createReview({
         productId,
         rating,
         comment,
       }).unwrap();
+      
+      console.log('Review submission result:', result);
+      
+      // Explicitly refetch the product details to ensure UI updates
       refetch();
-      toast.success("Review created successfully");
+      
+      toast.success(result.message || "Review created successfully");
+      
+      // Reset form after successful submission
+      setRating(0);
+      setComment('');
     } catch (error) {
-      toast.error(error?.data || error.message);
+      console.error('Review submission failed:', error);
+      toast.error(
+        error?.data?.message || 
+        error?.message || 
+        'Review submission failed. Please try again.'
+      );
     }
   };
 
@@ -68,7 +93,7 @@ const ProductDetails = () => {
       <div>
         <Link
           to="/"
-          className="text-white font-semibold hover:underline ml-[10rem]"
+          className="text-white font-semibold hover:underline ml-[10rem] dark:text-dark-primary"
         >
           Go Back
         </Link>
@@ -87,46 +112,46 @@ const ProductDetails = () => {
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full xl:w-[50rem] lg:w-[45rem] md:w-[30rem] sm:w-[20rem] mr-[2rem]"
+                className="w-full xl:w-[50rem] lg:w-[45rem] md:w-[30rem] sm:w-[20rem] mr-[2rem] rounded-lg shadow-md dark:shadow-gray-700"
               />
 
               <HeartIcon product={product} />
             </div>
 
             <div className="flex flex-col justify-between">
-              <h2 className="text-2xl font-semibold">{product.name}</h2>
-              <p className="my-4 xl:w-[35rem] lg:w-[35rem] md:w-[30rem] text-[#B0B0B0]">
+              <h2 className="text-2xl font-semibold dark:text-dark-primary">{product.name}</h2>
+              <p className="my-4 xl:w-[35rem] lg:w-[35rem] md:w-[30rem] text-[#B0B0B0] dark:text-dark-secondary">
                 {product.description}
               </p>
 
-              <p className="text-5xl my-4 font-extrabold">$ {product.price}</p>
+              <p className="text-5xl my-4 font-extrabold dark:text-white">${product.price}</p>
 
               <div className="flex items-center justify-between w-[20rem]">
                 <div className="one">
                   <h1 className="flex items-center mb-6">
-                    <FaStore className="mr-2 text-white" /> Brand:{" "}
+                    <FaStore className="mr-2 text-white dark:text-white" /> Brand:{" "}
                     {product.brand}
                   </h1>
                   <h1 className="flex items-center mb-6 w-[20rem]">
-                    <FaClock className="mr-2 text-white" /> Added:{" "}
+                    <FaClock className="mr-2 text-white dark:text-white" /> Added:{" "}
                     {moment(product.createAt).fromNow()}
                   </h1>
                   <h1 className="flex items-center mb-6">
-                    <FaStar className="mr-2 text-white" /> Reviews:{" "}
+                    <FaStar className="mr-2 text-white dark:text-white" /> Reviews:{" "}
                     {product.numReviews}
                   </h1>
                 </div>
 
                 <div className="two">
                   <h1 className="flex items-center mb-6">
-                    <FaStar className="mr-2 text-white" /> Ratings: {rating}
+                    <FaStar className="mr-2 text-white dark:text-white" /> Ratings: {rating}
                   </h1>
                   <h1 className="flex items-center mb-6">
-                    <FaShoppingCart className="mr-2 text-white" /> Quantity:{" "}
+                    <FaShoppingCart className="mr-2 text-white dark:text-white" /> Quantity:{" "}
                     {product.quantity}
                   </h1>
                   <h1 className="flex items-center mb-6 w-[10rem]">
-                    <FaBox className="mr-2 text-white" /> In Stock:{" "}
+                    <FaBox className="mr-2 text-white dark:text-white" /> In Stock:{" "}
                     {product.countInStock}
                   </h1>
                 </div>
@@ -143,7 +168,7 @@ const ProductDetails = () => {
                     <select
                       value={qty}
                       onChange={(e) => setQty(e.target.value)}
-                      className="p-2 w-[6rem] rounded-lg text-black"
+                      className="p-2 w-[6rem] rounded-lg text-black dark:bg-gray-700 dark:text-white"
                     >
                       {[...Array(product.countInStock).keys()].map((x) => (
                         <option key={x + 1} value={x + 1}>
@@ -159,7 +184,7 @@ const ProductDetails = () => {
                 <button
                   onClick={addToCartHandler}
                   disabled={product.countInStock === 0}
-                  className="bg-pink-600 text-white py-2 px-4 rounded-lg mt-4 md:mt-0"
+                  className="bg-pink-600 text-white py-2 px-4 rounded-lg mt-4 md:mt-0 hover:bg-pink-700 transition-colors dark:bg-pink-700 dark:hover:bg-pink-800"
                 >
                   Add To Cart
                 </button>
