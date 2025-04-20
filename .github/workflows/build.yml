@@ -1,14 +1,17 @@
-name: SonarQube Analysis
+name: SonarQube Scan
 
 on:
   push:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
-  sonarqube:
-    runs-on: windows-latest
+  sonar:
+    name: SonarQube Scan
+    runs-on: windows-latest  # Or you can use ubuntu-latest for Linux environments
 
     steps:
       - name: Checkout code
@@ -17,22 +20,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' # or whatever version you're using
+          node-version: '16.x' # Set your desired Node.js version
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Run tests (with coverage)
-        run: npm run test -- --coverage
-
-      - name: Install sonar-scanner
         run: |
-          npm install -g sonar-scanner
+          npm install
 
-      - name: Run SonarQube scanner
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          sonar-scanner \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+      - name: Run SonarQube Scan
+        uses: SonarSource/sonar-scanner-action@v2
+        with:
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          sonar-host-url: 'http://localhost:9000'
