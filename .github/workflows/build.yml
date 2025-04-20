@@ -8,33 +8,31 @@ on:
 
 jobs:
   sonarqube:
-    name: SonarQube Scan
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          java-version: '17' # or your version
-          distribution: 'temurin'
+          node-version: '18' # or whatever version you're using
 
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven
+      - name: Install dependencies
+        run: npm install
 
-      - name: Build and analyze
+      - name: Run tests (with coverage)
+        run: npm run test -- --coverage
+
+      - name: Install sonar-scanner
+        run: |
+          npm install -g sonar-scanner
+
+      - name: Run SonarQube scanner
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn clean verify sonar:sonar \
-            -Dsonar.projectKey=your_project_key \
-            -Dsonar.host.url=$SONAR_HOST_URL \
-            -Dsonar.login=$SONAR_TOKEN
+          sonar-scanner \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
