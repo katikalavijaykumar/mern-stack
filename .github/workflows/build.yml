@@ -2,44 +2,39 @@ name: SonarQube Analysis
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
 
 jobs:
   sonarqube:
     name: SonarQube Scan
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
-          node-version: '18' # or whatever version you use
+          java-version: '17' # or your version
+          distribution: 'temurin'
 
-      - name: Install dependencies (backend)
-        working-directory: ./backend
-        run: npm install
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
 
-      - name: Install dependencies (frontend)
-        working-directory: ./frontend
-        run: npm install
-
-      # Optional: run tests and generate coverage
-      # - name: Run tests and generate coverage
-      #   working-directory: ./frontend
-      #   run: npm test -- --coverage
-
-      - name: Download SonarScanner
-        run: |
-          choco install sonarscanner --version=5.0.1.3006 -y
-          RefreshEnv
-
-      - name: Run SonarQube Scanner
+      - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          sonar-scanner
+          mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=your_project_key \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.login=$SONAR_TOKEN
