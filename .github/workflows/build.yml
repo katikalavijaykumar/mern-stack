@@ -11,7 +11,7 @@ on:
 jobs:
   sonar:
     name: SonarQube Scan
-    runs-on: windows-latest  # Or you can use ubuntu-latest for Linux environments
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -20,14 +20,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x' # Set your desired Node.js version
+          node-version: '16'
 
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
-      - name: Run SonarQube Scan
-        uses: SonarSource/sonar-scanner-action@v2
-        with:
-          sonar-token: ${{ secrets.SONAR_TOKEN }}
-          sonar-host-url: 'http://localhost:9000'
+      - name: Install SonarScanner CLI
+        run: npm install -g sonarqube-scanner
+
+      - name: Run SonarQube Scanner
+        run: |
+          sonar-scanner ^
+            -Dsonar.projectKey=my-latest-project ^
+            -Dsonar.sources=src ^
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} ^
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
